@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
+  type AdminActionResult,
   createEvent,
   createGalleryImage,
   createPost,
@@ -35,6 +36,11 @@ type EditingState = {
   post: string | null;
 };
 
+type ActionStatus = {
+  message: string;
+  type: "error" | "success";
+} | null;
+
 export function AdminContentManager({
   associatedImages,
   events,
@@ -47,15 +53,36 @@ export function AdminContentManager({
     gallery: null,
     post: null,
   });
+  const [status, setStatus] = useState<ActionStatus>(null);
 
-  async function runAndRefresh(action: (formData: FormData) => Promise<void>, formData: FormData) {
-    await action(formData);
+  async function runAndRefresh(
+    action: (formData: FormData) => Promise<AdminActionResult>,
+    formData: FormData,
+  ) {
+    setStatus(null);
+
+    const result = await action(formData);
+
+    if (!result.ok) {
+      setStatus({
+        message: result.error,
+        type: "error",
+      });
+      return;
+    }
+
     setEditing({ event: null, gallery: null, post: null });
+    setStatus({
+      message: "Cambios guardados correctamente.",
+      type: "success",
+    });
     router.refresh();
   }
 
   return (
     <section className="mx-auto max-w-6xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
+      {status ? <ActionMessage status={status} /> : null}
+
       <div className="grid gap-6 lg:grid-cols-3">
         <form
           action={(formData) => runAndRefresh(createEvent, formData)}
@@ -434,12 +461,30 @@ function MultipleImageInput() {
   );
 }
 
+function ActionMessage({ status }: { status: NonNullable<ActionStatus> }) {
+  return (
+    <div
+      className={`rounded-lg border p-4 text-sm font-semibold ${
+        status.type === "success"
+          ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+          : "border-grana/25 bg-white text-grana"
+      }`}
+      role="status"
+    >
+      {status.message}
+    </div>
+  );
+}
+
 function AssociatedImageList({
   images,
   onDelete,
 }: {
   images: ContentImageRow[];
-  onDelete: (action: (formData: FormData) => Promise<void>, formData: FormData) => Promise<void>;
+  onDelete: (
+    action: (formData: FormData) => Promise<AdminActionResult>,
+    formData: FormData,
+  ) => Promise<void>;
 }) {
   if (images.length === 0) {
     return (

@@ -4,9 +4,14 @@ import { EventCard } from "@/components/EventCard";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { PostCard } from "@/components/PostCard";
-import { eventItems, postItems } from "@/lib/site-data";
+import { getPublishedEvents, getPublishedPosts } from "@/lib/content";
 
-export default function Home() {
+export default async function Home() {
+  const [events, posts] = await Promise.all([
+    getPublishedEvents(),
+    getPublishedPosts(),
+  ]);
+
   return (
     <div className="min-h-screen bg-hueso text-foreground">
       <Header />
@@ -60,11 +65,17 @@ export default function Home() {
                 Proximas actividades
               </h2>
             </div>
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
-              {eventItems.slice(0, 3).map((event) => (
-                <EventCard key={event.title} {...event} />
-              ))}
-            </div>
+            {events.length > 0 ? (
+              <div className="mt-8 grid gap-4 md:grid-cols-3">
+                {events.slice(0, 3).map((event) => (
+                  <EventCard key={event.id ?? event.title} {...event} />
+                ))}
+              </div>
+            ) : (
+              <div className="mt-8 rounded-lg border border-dashed border-azul-noche/20 bg-white p-6 text-sm font-semibold text-slate-600">
+                Todavia no hay eventos publicados.
+              </div>
+            )}
             <Link
               href="/eventos"
               className="mt-8 inline-flex min-h-11 items-center rounded-md bg-azul-noche px-5 py-2 text-sm font-bold text-white transition hover:bg-grana"
@@ -89,11 +100,17 @@ export default function Home() {
                 Comunicados, cronicas y avisos importantes de la asociacion.
               </p>
             </div>
-            <div className="mt-8 grid gap-4 md:grid-cols-2">
-              {postItems.slice(0, 2).map((post) => (
-                <PostCard key={post.title} {...post} />
-              ))}
-            </div>
+            {posts.length > 0 ? (
+              <div className="mt-8 grid gap-4 md:grid-cols-2">
+                {posts.slice(0, 2).map((post) => (
+                  <PostCard key={post.id ?? post.title} {...post} />
+                ))}
+              </div>
+            ) : (
+              <div className="mt-8 rounded-lg border border-dashed border-azul-noche/20 bg-hueso p-6 text-sm font-semibold text-slate-600">
+                Todavia no hay noticias publicadas.
+              </div>
+            )}
             <Link
               href="/noticias"
               className="mt-8 inline-flex min-h-11 items-center rounded-md bg-grana px-5 py-2 text-sm font-bold text-white transition hover:bg-grana-oscuro"

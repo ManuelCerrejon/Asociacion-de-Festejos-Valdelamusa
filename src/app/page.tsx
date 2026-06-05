@@ -17,37 +17,39 @@ export default async function Home() {
       <Header />
 
       <main>
-        <section className="relative isolate flex min-h-[82vh] items-end overflow-hidden bg-azul-noche text-white">
+        <section className="relative isolate flex min-h-[68vh] items-end overflow-hidden bg-azul-noche text-white sm:min-h-[75vh]">
           <Image
             src="/hero-valdelamusa.png"
             alt="Ambiente festivo en una plaza de Valdelamusa al anochecer"
             fill
             priority
             sizes="100vw"
-            className="object-cover"
+            className="scale-105 object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-azul-noche/35 via-azul-noche/55 to-azul-noche/95" />
-          <div className="relative mx-auto w-full max-w-6xl px-4 pb-16 pt-28 sm:px-6 lg:px-8">
-            <p className="text-sm font-bold uppercase tracking-[0.24em] text-white/78">
+          <div className="absolute inset-0 bg-gradient-to-br from-azul-noche/92 via-azul-noche/58 to-grana/45" />
+          <div className="absolute inset-0 bg-gradient-to-t from-azul-noche via-azul-noche/35 to-transparent" />
+
+          <div className="relative mx-auto w-full max-w-6xl px-4 pb-14 pt-24 sm:px-6 sm:pb-18 sm:pt-28 lg:px-8">
+            <p className="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-white/82 backdrop-blur">
               Web oficial
             </p>
-            <h1 className="mt-4 max-w-3xl text-4xl font-black leading-tight sm:text-6xl">
+            <h1 className="mt-5 max-w-4xl text-4xl font-black leading-[1.04] sm:text-6xl lg:text-7xl">
               Asociacion de Festejos Valdelamusa
             </h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-white/82 sm:text-lg">
+            <p className="mt-6 max-w-2xl text-base leading-8 text-white/84 sm:text-xl">
               Un espacio para compartir eventos, noticias y recuerdos de las
               celebraciones que unen a Valdelamusa.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/eventos"
-                className="inline-flex min-h-12 items-center justify-center rounded-md bg-grana px-5 py-3 text-sm font-bold text-white transition hover:bg-grana-oscuro focus:outline-none focus:ring-2 focus:ring-white"
+                className="inline-flex min-h-12 items-center justify-center rounded-md bg-grana px-5 py-3 text-sm font-bold text-white shadow-lg shadow-grana/25 transition hover:bg-grana-oscuro focus:outline-none focus:ring-2 focus:ring-white"
               >
                 Ver eventos
               </Link>
               <Link
                 href="/contacto"
-                className="inline-flex min-h-12 items-center justify-center rounded-md border border-white/50 px-5 py-3 text-sm font-bold text-white transition hover:bg-white hover:text-azul-noche focus:outline-none focus:ring-2 focus:ring-white"
+                className="inline-flex min-h-12 items-center justify-center rounded-md border border-white/50 bg-white/8 px-5 py-3 text-sm font-bold text-white backdrop-blur transition hover:bg-white hover:text-azul-noche focus:outline-none focus:ring-2 focus:ring-white"
               >
                 Contactar
               </Link>
@@ -55,18 +57,18 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="bg-hueso py-14 sm:py-20">
+        <section className="bg-hueso py-16 sm:py-24">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl">
               <p className="text-sm font-bold uppercase tracking-wider text-grana">
                 Eventos
               </p>
               <h2 className="mt-3 text-3xl font-black text-azul-noche sm:text-4xl">
-                Proximas actividades
+                Proximos eventos
               </h2>
             </div>
             {events.length > 0 ? (
-              <div className="mt-8 grid gap-4 md:grid-cols-3">
+              <div className="mt-10 grid gap-5 md:grid-cols-3">
                 {events.slice(0, 3).map((event) => (
                   <EventCard
                     key={event.id ?? event.title}
@@ -76,7 +78,7 @@ export default async function Home() {
                 ))}
               </div>
             ) : (
-              <div className="mt-8 rounded-lg border border-dashed border-azul-noche/20 bg-white p-6 text-sm font-semibold text-slate-600">
+              <div className="mt-10 rounded-lg border border-dashed border-azul-noche/20 bg-white p-6 text-sm font-semibold text-slate-600">
                 Todavia no hay eventos publicados.
               </div>
             )}
@@ -89,7 +91,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="bg-white py-14 sm:py-20">
+        <section className="bg-white py-16 sm:py-24">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
@@ -97,7 +99,7 @@ export default async function Home() {
                   Noticias
                 </p>
                 <h2 className="mt-3 text-3xl font-black text-azul-noche sm:text-4xl">
-                  Ultimas novedades
+                  Ultimas noticias
                 </h2>
               </div>
               <p className="max-w-md text-sm leading-6 text-slate-600">
@@ -105,8 +107,8 @@ export default async function Home() {
               </p>
             </div>
             {posts.length > 0 ? (
-              <div className="mt-8 grid gap-4 md:grid-cols-2">
-                {posts.slice(0, 2).map((post) => (
+              <div className="mt-10 grid gap-5 md:grid-cols-3">
+                {posts.slice(0, 3).map((post) => (
                   <PostCard
                     key={post.id ?? post.title}
                     {...post}
@@ -115,7 +117,7 @@ export default async function Home() {
                 ))}
               </div>
             ) : (
-              <div className="mt-8 rounded-lg border border-dashed border-azul-noche/20 bg-hueso p-6 text-sm font-semibold text-slate-600">
+              <div className="mt-10 rounded-lg border border-dashed border-azul-noche/20 bg-hueso p-6 text-sm font-semibold text-slate-600">
                 Todavia no hay noticias publicadas.
               </div>
             )}
@@ -128,7 +130,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="bg-azul-noche py-14 text-white sm:py-20">
+        <section className="bg-azul-noche py-16 text-white sm:py-24">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <p className="text-sm font-bold uppercase tracking-wider text-white/65">
               Galeria
@@ -155,7 +157,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="bg-hueso py-14 sm:py-20">
+        <section className="bg-hueso py-16 sm:py-24">
           <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:px-8">
             <div>
               <p className="text-sm font-bold uppercase tracking-wider text-grana">
@@ -185,9 +187,9 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="bg-white py-14 sm:py-20">
+        <section className="bg-white py-16 sm:py-24">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-lg bg-grana p-6 text-white sm:p-8">
+            <div className="rounded-lg bg-grana p-6 text-white shadow-xl shadow-grana/15 sm:p-8">
               <p className="text-sm font-bold uppercase tracking-wider text-white/70">
                 Contacto
               </p>

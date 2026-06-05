@@ -1,49 +1,10 @@
 import Image from "next/image";
+import Link from "next/link";
 import { EventCard } from "@/components/EventCard";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { PostCard } from "@/components/PostCard";
-
-const events = [
-  {
-    date: "Proximamente",
-    title: "Calendario de festejos",
-    description:
-      "Prepararemos aqui las fechas principales, horarios y espacios de cada actividad.",
-    location: "Valdelamusa",
-  },
-  {
-    date: "En preparacion",
-    title: "Actividades vecinales",
-    description:
-      "Talleres, encuentros y propuestas para que todas las edades tengan su sitio.",
-    location: "Espacios de la localidad",
-  },
-  {
-    date: "Abierto",
-    title: "Colaboraciones",
-    description:
-      "Un punto de encuentro para peñas, comercios, vecinos y entidades colaboradoras.",
-    location: "Asociacion de Festejos",
-  },
-];
-
-const posts = [
-  {
-    category: "Noticias",
-    title: "Nueva web oficial en marcha",
-    excerpt:
-      "Este sera el espacio donde consultar avisos, novedades y comunicados de la asociacion.",
-    date: "2026",
-  },
-  {
-    category: "Comunidad",
-    title: "Un lugar para participar",
-    excerpt:
-      "La web nace para acercar la actividad de la asociacion a vecinos, visitantes y colaboradores.",
-    date: "Valdelamusa",
-  },
-];
+import { eventItems, postItems } from "@/lib/site-data";
 
 export default function Home() {
   return (
@@ -51,10 +12,7 @@ export default function Home() {
       <Header />
 
       <main>
-        <section
-          id="inicio"
-          className="relative isolate flex min-h-[82vh] items-end overflow-hidden bg-azul-noche text-white"
-        >
+        <section className="relative isolate flex min-h-[82vh] items-end overflow-hidden bg-azul-noche text-white">
           <Image
             src="/hero-valdelamusa.png"
             alt="Ambiente festivo en una plaza de Valdelamusa al anochecer"
@@ -76,23 +34,23 @@ export default function Home() {
               celebraciones que unen a Valdelamusa.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <a
-                href="#eventos"
+              <Link
+                href="/eventos"
                 className="inline-flex min-h-12 items-center justify-center rounded-md bg-grana px-5 py-3 text-sm font-bold text-white transition hover:bg-grana-oscuro focus:outline-none focus:ring-2 focus:ring-white"
               >
                 Ver eventos
-              </a>
-              <a
-                href="#contacto"
+              </Link>
+              <Link
+                href="/contacto"
                 className="inline-flex min-h-12 items-center justify-center rounded-md border border-white/50 px-5 py-3 text-sm font-bold text-white transition hover:bg-white hover:text-azul-noche focus:outline-none focus:ring-2 focus:ring-white"
               >
                 Contactar
-              </a>
+              </Link>
             </div>
           </div>
         </section>
 
-        <section id="eventos" className="bg-hueso py-14 sm:py-20">
+        <section className="bg-hueso py-14 sm:py-20">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl">
               <p className="text-sm font-bold uppercase tracking-wider text-grana">
@@ -103,14 +61,20 @@ export default function Home() {
               </h2>
             </div>
             <div className="mt-8 grid gap-4 md:grid-cols-3">
-              {events.map((event) => (
+              {eventItems.slice(0, 3).map((event) => (
                 <EventCard key={event.title} {...event} />
               ))}
             </div>
+            <Link
+              href="/eventos"
+              className="mt-8 inline-flex min-h-11 items-center rounded-md bg-azul-noche px-5 py-2 text-sm font-bold text-white transition hover:bg-grana"
+            >
+              Ver agenda completa
+            </Link>
           </div>
         </section>
 
-        <section id="noticias" className="bg-white py-14 sm:py-20">
+        <section className="bg-white py-14 sm:py-20">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
@@ -122,19 +86,24 @@ export default function Home() {
                 </h2>
               </div>
               <p className="max-w-md text-sm leading-6 text-slate-600">
-                Esta seccion quedara lista para publicar comunicados, cronicas
-                y avisos importantes.
+                Comunicados, cronicas y avisos importantes de la asociacion.
               </p>
             </div>
             <div className="mt-8 grid gap-4 md:grid-cols-2">
-              {posts.map((post) => (
+              {postItems.slice(0, 2).map((post) => (
                 <PostCard key={post.title} {...post} />
               ))}
             </div>
+            <Link
+              href="/noticias"
+              className="mt-8 inline-flex min-h-11 items-center rounded-md bg-grana px-5 py-2 text-sm font-bold text-white transition hover:bg-grana-oscuro"
+            >
+              Leer noticias
+            </Link>
           </div>
         </section>
 
-        <section id="galeria" className="bg-azul-noche py-14 text-white sm:py-20">
+        <section className="bg-azul-noche py-14 text-white sm:py-20">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <p className="text-sm font-bold uppercase tracking-wider text-white/65">
               Galeria
@@ -152,10 +121,16 @@ export default function Home() {
                 </div>
               ))}
             </div>
+            <Link
+              href="/galeria"
+              className="mt-8 inline-flex min-h-11 items-center rounded-md bg-white px-5 py-2 text-sm font-bold text-azul-noche transition hover:bg-grana hover:text-white"
+            >
+              Abrir galeria
+            </Link>
           </div>
         </section>
 
-        <section id="sobre-nosotros" className="bg-hueso py-14 sm:py-20">
+        <section className="bg-hueso py-14 sm:py-20">
           <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:px-8">
             <div>
               <p className="text-sm font-bold uppercase tracking-wider text-grana">
@@ -175,11 +150,17 @@ export default function Home() {
                 Esta web queda preparada para crecer con nuevas secciones,
                 contenidos dinamicos y servicios cuando el proyecto lo necesite.
               </p>
+              <Link
+                href="/sobre-nosotros"
+                className="inline-flex min-h-11 items-center rounded-md bg-azul-noche px-5 py-2 text-sm font-bold text-white transition hover:bg-grana"
+              >
+                Conocer la asociacion
+              </Link>
             </div>
           </div>
         </section>
 
-        <section id="contacto" className="bg-white py-14 sm:py-20">
+        <section className="bg-white py-14 sm:py-20">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="rounded-lg bg-grana p-6 text-white sm:p-8">
               <p className="text-sm font-bold uppercase tracking-wider text-white/70">
@@ -189,9 +170,15 @@ export default function Home() {
                 Hablemos de las proximas fiestas
               </h2>
               <p className="mt-4 max-w-2xl text-sm leading-6 text-white/82">
-                La informacion de contacto oficial se incorporara aqui cuando
-                la asociacion defina sus canales publicos.
+                Correo, redes sociales y formulario visual para consultas y
+                colaboraciones.
               </p>
+              <Link
+                href="/contacto"
+                className="mt-6 inline-flex min-h-11 items-center rounded-md bg-white px-5 py-2 text-sm font-bold text-grana transition hover:bg-azul-noche hover:text-white"
+              >
+                Ir a contacto
+              </Link>
             </div>
           </div>
         </section>

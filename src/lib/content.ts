@@ -1,6 +1,7 @@
 import type {
   EventItem,
   EventRow,
+  ContentImageRow,
   GalleryItem,
   GalleryRow,
   PostItem,
@@ -60,6 +61,51 @@ export async function getPublishedEvents() {
   return (data as EventRow[]).map(mapEvent);
 }
 
+export async function getPublishedEventById(id: string) {
+  const supabase = getPublicSupabase();
+
+  if (!supabase) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("events")
+    .select("*")
+    .eq("id", id)
+    .eq("is_published", true)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error loading event detail", error.message);
+    return null;
+  }
+
+  return data as EventRow | null;
+}
+
+export async function getPublishedEventImages(eventId: string) {
+  const supabase = getPublicSupabase();
+
+  if (!supabase) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("content_images")
+    .select("*")
+    .eq("owner_type", "event")
+    .eq("owner_id", eventId)
+    .order("position", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("Error loading event images", error.message);
+    return [];
+  }
+
+  return data as ContentImageRow[];
+}
+
 export async function getPublishedPosts() {
   const supabase = getPublicSupabase();
 
@@ -79,6 +125,51 @@ export async function getPublishedPosts() {
   }
 
   return (data as PostRow[]).map(mapPost);
+}
+
+export async function getPublishedPostById(id: string) {
+  const supabase = getPublicSupabase();
+
+  if (!supabase) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("id", id)
+    .eq("is_published", true)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error loading post detail", error.message);
+    return null;
+  }
+
+  return data as PostRow | null;
+}
+
+export async function getPublishedPostImages(postId: string) {
+  const supabase = getPublicSupabase();
+
+  if (!supabase) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("content_images")
+    .select("*")
+    .eq("owner_type", "post")
+    .eq("owner_id", postId)
+    .order("position", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("Error loading post images", error.message);
+    return [];
+  }
+
+  return data as ContentImageRow[];
 }
 
 export async function getPublishedGalleryImages() {

@@ -2,7 +2,12 @@ import { AdminLoginButton, AdminLogoutButton } from "@/components/AdminAuthButto
 import { AdminContentManager } from "@/components/AdminContentManager";
 import { Header } from "@/components/Header";
 import { allowedAdminEmail, getAdminSession } from "@/lib/auth";
-import type { EventRow, GalleryRow, PostRow } from "@/lib/content-types";
+import type {
+  ContentImageRow,
+  EventRow,
+  GalleryRow,
+  PostRow,
+} from "@/lib/content-types";
 import { getAdminSupabase, isSupabaseAdminConfigured } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
@@ -11,10 +16,11 @@ async function getAdminContent() {
   const supabase = getAdminSupabase();
 
   if (!supabase) {
-    return { events: [], gallery: [], posts: [] };
+    return { associatedImages: [], events: [], gallery: [], posts: [] };
   }
 
-  const [eventsResult, postsResult, galleryResult] = await Promise.all([
+  const [eventsResult, postsResult, galleryResult, associatedImagesResult] =
+    await Promise.all([
     supabase.from("events").select("*").order("created_at", {
       ascending: false,
     }),
@@ -24,9 +30,13 @@ async function getAdminContent() {
     supabase.from("gallery_images").select("*").order("created_at", {
       ascending: false,
     }),
+    supabase.from("content_images").select("*").order("created_at", {
+      ascending: false,
+    }),
   ]);
 
   return {
+    associatedImages: (associatedImagesResult.data ?? []) as ContentImageRow[],
     events: (eventsResult.data ?? []) as EventRow[],
     posts: (postsResult.data ?? []) as PostRow[],
     gallery: (galleryResult.data ?? []) as GalleryRow[],
@@ -36,9 +46,9 @@ async function getAdminContent() {
 export default async function AdminPage() {
   const session = await getAdminSession();
   const configured = isSupabaseAdminConfigured();
-  const { events, gallery, posts } = session
+  const { associatedImages, events, gallery, posts } = session
     ? await getAdminContent()
-    : { events: [], gallery: [], posts: [] };
+    : { associatedImages: [], events: [], gallery: [], posts: [] };
 
   return (
     <div className="min-h-screen bg-hueso text-foreground">
@@ -85,7 +95,12 @@ export default async function AdminPage() {
             </div>
           </section>
         ) : (
-          <AdminContentManager events={events} gallery={gallery} posts={posts} />
+          <AdminContentManager
+            associatedImages={associatedImages}
+            events={events}
+            gallery={gallery}
+            posts={posts}
+          />
         )}
       </main>
     </div>

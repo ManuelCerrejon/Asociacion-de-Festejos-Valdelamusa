@@ -7,6 +7,7 @@ import {
   createEvent,
   createGalleryImage,
   createPost,
+  deleteAssociatedImage,
   deleteEvent,
   deleteGalleryImage,
   deletePost,
@@ -14,9 +15,15 @@ import {
   updateGalleryImage,
   updatePost,
 } from "@/app/admin/actions";
-import type { EventRow, GalleryRow, PostRow } from "@/lib/content-types";
+import type {
+  ContentImageRow,
+  EventRow,
+  GalleryRow,
+  PostRow,
+} from "@/lib/content-types";
 
 type AdminContentManagerProps = {
+  associatedImages: ContentImageRow[];
   events: EventRow[];
   gallery: GalleryRow[];
   posts: PostRow[];
@@ -29,6 +36,7 @@ type EditingState = {
 };
 
 export function AdminContentManager({
+  associatedImages,
   events,
   gallery,
   posts,
@@ -60,6 +68,7 @@ export function AdminContentManager({
             <TextInput label="Ubicacion" name="location" />
             <TextArea label="Descripcion" name="description" />
             <ImageInput />
+            <MultipleImageInput />
             <PublishedCheckbox />
             <SubmitButton>Guardar evento</SubmitButton>
           </div>
@@ -77,6 +86,7 @@ export function AdminContentManager({
             <TextArea label="Resumen" name="excerpt" rows={3} />
             <TextArea label="Contenido" name="content" rows={5} />
             <ImageInput />
+            <MultipleImageInput />
             <PublishedCheckbox />
             <SubmitButton>Guardar noticia</SubmitButton>
           </div>
@@ -139,6 +149,14 @@ export function AdminContentManager({
                       <DeleteButton />
                     </form>
                   </div>
+                  <AssociatedImageList
+                    images={associatedImages.filter(
+                      (image) =>
+                        image.owner_type === "event" &&
+                        image.owner_id === event.id,
+                    )}
+                    onDelete={runAndRefresh}
+                  />
                 </div>
               </div>
 
@@ -167,6 +185,7 @@ export function AdminContentManager({
                     defaultValue={event.description}
                   />
                   <ImageInput />
+                  <MultipleImageInput />
                   <PublishedCheckbox defaultChecked={event.is_published} />
                   <SubmitButton>Actualizar evento</SubmitButton>
                 </form>
@@ -218,6 +237,13 @@ export function AdminContentManager({
                       <DeleteButton />
                     </form>
                   </div>
+                  <AssociatedImageList
+                    images={associatedImages.filter(
+                      (image) =>
+                        image.owner_type === "post" && image.owner_id === post.id,
+                    )}
+                    onDelete={runAndRefresh}
+                  />
                 </div>
               </div>
 
@@ -248,6 +274,7 @@ export function AdminContentManager({
                     rows={5}
                   />
                   <ImageInput />
+                  <MultipleImageInput />
                   <PublishedCheckbox defaultChecked={post.is_published} />
                   <SubmitButton>Actualizar noticia</SubmitButton>
                 </form>
@@ -389,6 +416,66 @@ function ImageInput() {
         className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-azul-noche file:px-3 file:py-2 file:text-sm file:font-bold file:text-white"
       />
     </label>
+  );
+}
+
+function MultipleImageInput() {
+  return (
+    <label className="grid gap-2 text-sm font-bold text-azul-noche">
+      Imagenes adicionales
+      <input
+        type="file"
+        name="additional_images"
+        accept="image/*"
+        multiple
+        className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-azul-noche file:px-3 file:py-2 file:text-sm file:font-bold file:text-white"
+      />
+    </label>
+  );
+}
+
+function AssociatedImageList({
+  images,
+  onDelete,
+}: {
+  images: ContentImageRow[];
+  onDelete: (action: (formData: FormData) => Promise<void>, formData: FormData) => Promise<void>;
+}) {
+  if (images.length === 0) {
+    return (
+      <p className="mt-5 rounded-md bg-slate-50 p-3 text-sm font-semibold text-slate-500">
+        Sin imagenes adicionales asociadas.
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-5">
+      <p className="text-sm font-black uppercase tracking-wider text-azul-noche">
+        Imagenes adicionales
+      </p>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {images.map((image) => (
+          <div key={image.id} className="rounded-md border border-slate-100 p-3">
+            <ImagePreview alt={image.alt_text || "Imagen asociada"} src={image.image_url} />
+            <form
+              action={(formData) => onDelete(deleteAssociatedImage, formData)}
+              onSubmit={(submitEvent) => {
+                if (!window.confirm("Eliminar esta imagen asociada?")) {
+                  submitEvent.preventDefault();
+                }
+              }}
+              className="mt-3"
+            >
+              <input type="hidden" name="id" value={image.id} />
+              <input type="hidden" name="owner_type" value={image.owner_type} />
+              <input type="hidden" name="owner_id" value={image.owner_id} />
+              <DeleteButton />
+            </form>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 

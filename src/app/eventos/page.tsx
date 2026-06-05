@@ -16,7 +16,11 @@ export default async function EventosPage() {
           {events.length > 0 ? (
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {events.map((event) => (
-                <EventCard key={event.id ?? event.title} {...event} />
+                <EventCard
+                  key={event.id ?? event.title}
+                  {...event}
+                  href={event.id ? `/eventos/${event.id}` : undefined}
+                />
               ))}
             </div>
           ) : (

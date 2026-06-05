@@ -16,7 +16,11 @@ export default async function NoticiasPage() {
           {posts.length > 0 ? (
             <div className="grid gap-5 md:grid-cols-2">
               {posts.map((post) => (
-                <PostCard key={post.id ?? post.title} {...post} />
+                <PostCard
+                  key={post.id ?? post.title}
+                  {...post}
+                  href={post.id ? `/noticias/${post.id}` : undefined}
+                />
               ))}
             </div>
           ) : (

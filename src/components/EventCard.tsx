@@ -1,9 +1,11 @@
 import Image from "next/image";
+import Link from "next/link";
 
 type EventCardProps = {
   date: string;
   title: string;
   description: string;
+  href?: string;
   location: string;
   image?: string;
 };
@@ -12,10 +14,11 @@ export function EventCard({
   date,
   title,
   description,
+  href,
   location,
   image,
 }: EventCardProps) {
-  return (
+  const card = (
     <article className="overflow-hidden rounded-lg border border-azul-noche/10 bg-white shadow-sm">
       {image ? (
         <div className="relative aspect-[4/3] bg-azul-noche/10">
@@ -40,5 +43,19 @@ export function EventCard({
         </p>
       </div>
     </article>
+  );
+
+  if (!href) {
+    return card;
+  }
+
+  return (
+    <Link
+      href={href}
+      className="block transition hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-grana focus:ring-offset-2"
+      aria-label={`Ver evento ${title}`}
+    >
+      {card}
+    </Link>
   );
 }

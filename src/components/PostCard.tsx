@@ -1,10 +1,12 @@
 import Image from "next/image";
+import Link from "next/link";
 
 type PostCardProps = {
   category: string;
   title: string;
   excerpt: string;
   date: string;
+  href?: string;
   image?: string;
 };
 
@@ -13,9 +15,10 @@ export function PostCard({
   title,
   excerpt,
   date,
+  href,
   image,
 }: PostCardProps) {
-  return (
+  const card = (
     <article className="overflow-hidden rounded-lg border border-white/70 bg-white shadow-sm">
       {image ? (
         <div className="relative aspect-[16/10] bg-azul-noche/10">
@@ -39,5 +42,19 @@ export function PostCard({
         <p className="mt-3 text-sm leading-6 text-slate-600">{excerpt}</p>
       </div>
     </article>
+  );
+
+  if (!href) {
+    return card;
+  }
+
+  return (
+    <Link
+      href={href}
+      className="block transition hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-grana focus:ring-offset-2"
+      aria-label={`Leer noticia ${title}`}
+    >
+      {card}
+    </Link>
   );
 }

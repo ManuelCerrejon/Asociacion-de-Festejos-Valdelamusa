@@ -68,7 +68,11 @@ export default async function Home() {
             {events.length > 0 ? (
               <div className="mt-8 grid gap-4 md:grid-cols-3">
                 {events.slice(0, 3).map((event) => (
-                  <EventCard key={event.id ?? event.title} {...event} />
+                  <EventCard
+                    key={event.id ?? event.title}
+                    {...event}
+                    href={event.id ? `/eventos/${event.id}` : undefined}
+                  />
                 ))}
               </div>
             ) : (
@@ -103,7 +107,11 @@ export default async function Home() {
             {posts.length > 0 ? (
               <div className="mt-8 grid gap-4 md:grid-cols-2">
                 {posts.slice(0, 2).map((post) => (
-                  <PostCard key={post.id ?? post.title} {...post} />
+                  <PostCard
+                    key={post.id ?? post.title}
+                    {...post}
+                    href={post.id ? `/noticias/${post.id}` : undefined}
+                  />
                 ))}
               </div>
             ) : (

@@ -36,6 +36,10 @@ async function uploadImageIfPresent(formData: FormData, key = "image") {
     return null;
   }
 
+  return uploadFile(file);
+}
+
+async function uploadFile(file: File) {
   const supabase = await requireAdminSupabase();
   const extension = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
   const path = `${new Date().getFullYear()}/${randomUUID()}.${extension}`;
@@ -56,29 +60,72 @@ async function uploadImageIfPresent(formData: FormData, key = "image") {
   return data.publicUrl;
 }
 
-function revalidateContent() {
+async function uploadAssociatedImages(
+  formData: FormData,
+  ownerType: "event" | "post",
+  ownerId: string,
+) {
+  const files = formData
+    .getAll("additional_images")
+    .filter((file): file is File => file instanceof File && file.size > 0);
+
+  if (files.length === 0) {
+    return;
+  }
+
+  const supabase = await requireAdminSupabase();
+  const rows = await Promise.all(
+    files.map(async (file, index) => ({
+      owner_type: ownerType,
+      owner_id: ownerId,
+      image_url: await uploadFile(file),
+      alt_text: file.name,
+      position: index,
+    })),
+  );
+
+  const { error } = await supabase.from("content_images").insert(rows);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+function revalidateContent(detailPath?: string) {
   revalidatePath("/");
   revalidatePath("/eventos");
   revalidatePath("/noticias");
   revalidatePath("/galeria");
   revalidatePath("/admin");
+
+  if (detailPath) {
+    revalidatePath(detailPath);
+  }
 }
 
 export async function createEvent(formData: FormData) {
   const supabase = await requireAdminSupabase();
   const imageUrl = await uploadImageIfPresent(formData);
 
-  const { error } = await supabase.from("events").insert({
-    title: getString(formData, "title"),
-    description: getString(formData, "description"),
-    event_date: getString(formData, "event_date"),
-    location: getString(formData, "location"),
-    image_url: imageUrl,
-    is_published: getBoolean(formData, "is_published"),
-  });
+  const { data, error } = await supabase
+    .from("events")
+    .insert({
+      title: getString(formData, "title"),
+      description: getString(formData, "description"),
+      event_date: getString(formData, "event_date"),
+      location: getString(formData, "location"),
+      image_url: imageUrl,
+      is_published: getBoolean(formData, "is_published"),
+    })
+    .select("id")
+    .single();
 
   if (error) {
     throw new Error(error.message);
+  }
+
+  if (data?.id) {
+    await uploadAssociatedImages(formData, "event", data.id);
   }
 
   revalidateContent();
@@ -107,15 +154,25 @@ export async function updateEvent(formData: FormData) {
     throw new Error(error.message);
   }
 
-  revalidateContent();
+  await uploadAssociatedImages(formData, "event", id);
+
+  revalidateContent(`/eventos/${id}`);
 }
 
 export async function deleteEvent(formData: FormData) {
   const supabase = await requireAdminSupabase();
+  const id = getString(formData, "id");
+
+  await supabase
+    .from("content_images")
+    .delete()
+    .eq("owner_type", "event")
+    .eq("owner_id", id);
+
   const { error } = await supabase
     .from("events")
     .delete()
-    .eq("id", getString(formData, "id"));
+    .eq("id", id);
 
   if (error) {
     throw new Error(error.message);
@@ -128,18 +185,26 @@ export async function createPost(formData: FormData) {
   const supabase = await requireAdminSupabase();
   const imageUrl = await uploadImageIfPresent(formData);
 
-  const { error } = await supabase.from("posts").insert({
-    title: getString(formData, "title"),
-    excerpt: getString(formData, "excerpt"),
-    content: getString(formData, "content"),
-    category: getString(formData, "category") || "Noticias",
-    published_at: getString(formData, "published_at"),
-    image_url: imageUrl,
-    is_published: getBoolean(formData, "is_published"),
-  });
+  const { data, error } = await supabase
+    .from("posts")
+    .insert({
+      title: getString(formData, "title"),
+      excerpt: getString(formData, "excerpt"),
+      content: getString(formData, "content"),
+      category: getString(formData, "category") || "Noticias",
+      published_at: getString(formData, "published_at"),
+      image_url: imageUrl,
+      is_published: getBoolean(formData, "is_published"),
+    })
+    .select("id")
+    .single();
 
   if (error) {
     throw new Error(error.message);
+  }
+
+  if (data?.id) {
+    await uploadAssociatedImages(formData, "post", data.id);
   }
 
   revalidateContent();
@@ -169,15 +234,25 @@ export async function updatePost(formData: FormData) {
     throw new Error(error.message);
   }
 
-  revalidateContent();
+  await uploadAssociatedImages(formData, "post", id);
+
+  revalidateContent(`/noticias/${id}`);
 }
 
 export async function deletePost(formData: FormData) {
   const supabase = await requireAdminSupabase();
+  const id = getString(formData, "id");
+
+  await supabase
+    .from("content_images")
+    .delete()
+    .eq("owner_type", "post")
+    .eq("owner_id", id);
+
   const { error } = await supabase
     .from("posts")
     .delete()
-    .eq("id", getString(formData, "id"));
+    .eq("id", id);
 
   if (error) {
     throw new Error(error.message);
@@ -247,4 +322,21 @@ export async function deleteGalleryImage(formData: FormData) {
   }
 
   revalidateContent();
+}
+
+export async function deleteAssociatedImage(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  const id = getString(formData, "id");
+  const ownerType = getString(formData, "owner_type");
+  const ownerId = getString(formData, "owner_id");
+
+  const { error } = await supabase.from("content_images").delete().eq("id", id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidateContent(
+    ownerType === "event" ? `/eventos/${ownerId}` : `/noticias/${ownerId}`,
+  );
 }

@@ -57,3 +57,13 @@ export type GalleryRow = {
   title: string;
   updated_at: string;
 };
+
+export type ContentImageRow = {
+  alt_text: string;
+  created_at: string;
+  id: string;
+  image_url: string;
+  owner_id: string;
+  owner_type: "event" | "post";
+  position: number;
+};

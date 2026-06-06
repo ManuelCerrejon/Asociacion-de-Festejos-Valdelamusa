@@ -29,6 +29,12 @@ export function Footer() {
               {link.label}
             </Link>
           ))}
+          <Link
+            href="/admin"
+            className="rounded-full px-3 py-2 text-white/45 transition hover:text-white/75"
+          >
+            Acceso administración
+          </Link>
         </div>
       </div>
     </footer>

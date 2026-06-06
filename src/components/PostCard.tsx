@@ -20,8 +20,8 @@ export function PostCard({
 }: PostCardProps) {
   const card = (
     <article className="group h-full overflow-hidden rounded-lg border border-azul-noche/8 bg-white shadow-sm transition duration-300 hover:border-grana/25 hover:shadow-xl hover:shadow-azul-noche/10">
-      {image ? (
-        <div className="relative aspect-[4/3] overflow-hidden bg-azul-noche/10 sm:aspect-[16/10]">
+      <div className="relative aspect-[4/3] overflow-hidden bg-azul-noche/10 sm:aspect-[16/10]">
+        {image ? (
           <Image
             src={image}
             alt=""
@@ -29,9 +29,14 @@ export function PostCard({
             sizes="(min-width: 768px) 50vw, 100vw"
             className="object-cover transition duration-500 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-azul-noche/55 via-transparent to-transparent opacity-80" />
-        </div>
-      ) : null}
+        ) : (
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,var(--azul-noche),var(--grana))]" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-azul-noche/55 via-transparent to-transparent opacity-80" />
+        <span className="absolute bottom-4 left-4 rounded-full bg-white/90 px-3 py-1 text-xs font-black uppercase tracking-wider text-grana">
+          {category}
+        </span>
+      </div>
       <div className="p-5">
         <div className="flex items-center justify-between gap-4">
           <span className="rounded-full bg-grana/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-grana">

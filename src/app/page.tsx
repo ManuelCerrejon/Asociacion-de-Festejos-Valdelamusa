@@ -4,12 +4,17 @@ import { EventCard } from "@/components/EventCard";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { PostCard } from "@/components/PostCard";
-import { getPublishedEvents, getPublishedPosts } from "@/lib/content";
+import {
+  getPublishedEvents,
+  getPublishedGalleryImages,
+  getPublishedPosts,
+} from "@/lib/content";
 
 export default async function Home() {
-  const [events, posts] = await Promise.all([
+  const [events, posts, gallery] = await Promise.all([
     getPublishedEvents(),
     getPublishedPosts(),
+    getPublishedGalleryImages(),
   ]);
 
   return (
@@ -129,30 +134,63 @@ export default async function Home() {
             </Link>
           </div>
         </section>
-
         <section className="bg-azul-noche py-16 text-white sm:py-24">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <p className="text-sm font-bold uppercase tracking-wider text-white/65">
-              Galeria
+              Galería
             </p>
             <h2 className="mt-3 text-3xl font-black sm:text-4xl">
               Recuerdos para compartir
             </h2>
-            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {["Fiestas", "Musica", "Vecindad", "Tradicion"].map((item) => (
-                <div
-                  key={item}
-                  className="flex aspect-square items-end rounded-lg bg-white/10 p-4 text-sm font-bold ring-1 ring-white/15"
-                >
-                  {item}
-                </div>
-              ))}
-            </div>
+            {gallery.length > 0 ? (
+              <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {gallery.slice(0, 4).map((image) => (
+                  <Link
+                    key={image.id ?? image.title}
+                    href="/galeria"
+                    className="group block overflow-hidden rounded-lg bg-white/10 ring-1 ring-white/15 transition duration-300 hover:-translate-y-1 hover:bg-white/15 hover:shadow-xl hover:shadow-black/20 focus:outline-none focus:ring-2 focus:ring-grana focus:ring-offset-2 focus:ring-offset-azul-noche"
+                  >
+                    <div className="relative aspect-[4/3] overflow-hidden bg-white/10">
+                      <Image
+                        src={image.image}
+                        alt={image.title}
+                        fill
+                        sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                        className="object-cover transition duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-azul-noche/80 via-azul-noche/10 to-transparent" />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-base font-black text-white">
+                        {image.title}
+                      </h3>
+                      {image.description ? (
+                        <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/72">
+                          {image.description}
+                        </p>
+                      ) : null}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {["Fiestas", "Música", "Vecindad", "Tradición"].map((item) => (
+                  <Link
+                    key={item}
+                    href="/galeria"
+                    className="group flex aspect-[4/3] items-end rounded-lg bg-white/10 p-4 text-sm font-bold ring-1 ring-white/15 transition duration-300 hover:-translate-y-1 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-grana focus:ring-offset-2 focus:ring-offset-azul-noche"
+                  >
+                    <span>{item}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
             <Link
               href="/galeria"
               className="mt-8 inline-flex min-h-11 items-center rounded-md bg-white px-5 py-2 text-sm font-bold text-azul-noche transition hover:bg-grana hover:text-white"
             >
-              Abrir galeria
+              Abrir galería
             </Link>
           </div>
         </section>

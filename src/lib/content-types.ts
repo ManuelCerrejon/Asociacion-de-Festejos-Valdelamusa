@@ -4,6 +4,7 @@ export type EventItem = {
   id?: string;
   image?: string;
   location: string;
+  rawDate: string;
   title: string;
 };
 
@@ -13,6 +14,7 @@ export type PostItem = {
   excerpt: string;
   id?: string;
   image?: string;
+  rawDate: string;
   title: string;
 };
 

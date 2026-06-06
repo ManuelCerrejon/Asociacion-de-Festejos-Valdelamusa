@@ -7,15 +7,17 @@ import type {
   PostItem,
   PostRow,
 } from "@/lib/content-types";
+import { formatSpanishDate } from "@/lib/date-utils";
 import { getPublicSupabase } from "@/lib/supabase";
 
 export function mapEvent(row: EventRow): EventItem {
   return {
     id: row.id,
-    date: row.event_date,
+    date: formatSpanishDate(row.event_date),
     description: row.description,
     image: row.image_url ?? undefined,
     location: row.location,
+    rawDate: row.event_date,
     title: row.title,
   };
 }
@@ -24,9 +26,10 @@ export function mapPost(row: PostRow): PostItem {
   return {
     id: row.id,
     category: row.category,
-    date: row.published_at,
+    date: formatSpanishDate(row.published_at),
     excerpt: row.excerpt,
     image: row.image_url ?? undefined,
+    rawDate: row.published_at,
     title: row.title,
   };
 }
@@ -51,7 +54,7 @@ export async function getPublishedEvents() {
     .from("events")
     .select("*")
     .eq("is_published", true)
-    .order("created_at", { ascending: false });
+    .order("event_date", { ascending: true });
 
   if (error) {
     console.error("Error loading events", error.message);

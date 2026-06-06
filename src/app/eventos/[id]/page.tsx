@@ -5,6 +5,7 @@ import { AssociatedImagesGallery } from "@/components/AssociatedImagesGallery";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { getPublishedEventById, getPublishedEventImages } from "@/lib/content";
+import { formatSpanishDate, getEventCountdown } from "@/lib/date-utils";
 import { getGoogleCalendarUrl } from "@/lib/share";
 
 export const dynamic = "force-dynamic";
@@ -28,6 +29,8 @@ export default async function EventoDetallePage({
     notFound();
   }
 
+  const formattedDate = formatSpanishDate(event.event_date);
+  const countdown = getEventCountdown(event.event_date);
   const calendarUrl = getGoogleCalendarUrl({
     description: event.description,
     location: event.location,
@@ -55,12 +58,17 @@ export default async function EventoDetallePage({
               </h1>
               <div className="mt-6 grid gap-3 text-sm font-bold text-white/82 sm:grid-cols-2">
                 <p className="rounded-md border border-white/15 px-4 py-3">
-                  {event.event_date}
+                  {formattedDate}
                 </p>
                 <p className="rounded-md border border-white/15 px-4 py-3">
                   {event.location}
                 </p>
               </div>
+              {countdown ? (
+                <p className="mt-4 inline-flex rounded-full bg-grana px-4 py-2 text-sm font-black text-white">
+                  {countdown}
+                </p>
+              ) : null}
             </div>
           </section>
 
@@ -95,7 +103,7 @@ export default async function EventoDetallePage({
               </div>
               <AssociatedImagesGallery
                 images={additionalImages}
-                title="Imagenes adicionales"
+                title="Imágenes adicionales"
               />
             </div>
           </section>

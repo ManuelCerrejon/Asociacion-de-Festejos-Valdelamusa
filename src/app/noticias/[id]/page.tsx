@@ -5,6 +5,7 @@ import { AssociatedImagesGallery } from "@/components/AssociatedImagesGallery";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { getPublishedPostById, getPublishedPostImages } from "@/lib/content";
+import { formatSpanishDate } from "@/lib/date-utils";
 import { getShareUrls } from "@/lib/share";
 
 export const dynamic = "force-dynamic";
@@ -28,6 +29,7 @@ export default async function NoticiaDetallePage({
     notFound();
   }
 
+  const formattedDate = formatSpanishDate(post.published_at);
   const share = getShareUrls({
     path: `/noticias/${post.id}`,
     text: post.title,
@@ -51,7 +53,7 @@ export default async function NoticiaDetallePage({
                   {post.category}
                 </span>
                 <time className="text-sm font-semibold text-white/72">
-                  {post.published_at}
+                  {formattedDate}
                 </time>
               </div>
               <h1 className="mt-5 text-4xl font-black leading-tight sm:text-5xl">
@@ -102,7 +104,7 @@ export default async function NoticiaDetallePage({
               </div>
               <AssociatedImagesGallery
                 images={additionalImages}
-                title="Imagenes adicionales"
+                title="Imágenes adicionales"
               />
             </div>
           </section>

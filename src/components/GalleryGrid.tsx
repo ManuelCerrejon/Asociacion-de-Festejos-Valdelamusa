@@ -17,6 +17,7 @@ export function GalleryGrid({ items }: GalleryGridProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const selectedItem =
     selectedIndex === null ? null : items[selectedIndex] ?? null;
+  const selectedPosition = selectedIndex === null ? 0 : selectedIndex + 1;
 
   function showPrevious() {
     setSelectedIndex((current) =>
@@ -38,12 +39,12 @@ export function GalleryGrid({ items }: GalleryGridProps) {
             key={item.title}
             type="button"
             onClick={() => setSelectedIndex(index)}
-            className={`group relative mb-4 block w-full break-inside-avoid overflow-hidden rounded-lg bg-azul-noche text-left shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-grana focus:ring-offset-2 ${
+            className={`group relative mb-4 block w-full break-inside-avoid overflow-hidden rounded-lg bg-gradient-to-br from-azul-noche to-azul-noche/92 text-left shadow-sm ring-1 ring-azul-noche/10 transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-azul-noche/10 focus:outline-none focus:ring-2 focus:ring-grana focus:ring-offset-2 ${
               index % 5 === 0
-                ? "h-80"
+                ? "h-72 sm:h-80"
                 : index % 3 === 0
-                  ? "h-72"
-                  : "h-56"
+                  ? "h-64 sm:h-72"
+                  : "h-56 sm:h-60"
             }`}
           >
             <Image
@@ -51,16 +52,18 @@ export function GalleryGrid({ items }: GalleryGridProps) {
               alt={item.title}
               fill
               sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-              className="object-cover transition duration-500 group-hover:scale-105"
+              className="object-contain p-1 transition duration-500 group-hover:scale-[1.02]"
             />
-            <span className="absolute inset-0 bg-gradient-to-t from-azul-noche/85 via-azul-noche/25 to-transparent" />
+            <span className="absolute inset-0 bg-gradient-to-t from-azul-noche/90 via-azul-noche/18 to-transparent" />
             <span className="absolute bottom-0 left-0 right-0 p-4">
-              <span className="block text-lg font-bold text-white">
+              <span className="block text-base font-black text-white sm:text-lg">
                 {item.title}
               </span>
-              <span className="mt-1 block text-sm leading-5 text-white/78">
-                {item.description}
-              </span>
+              {item.description ? (
+                <span className="mt-1 line-clamp-2 block text-sm leading-5 text-white/78">
+                  {item.description}
+                </span>
+              ) : null}
             </span>
           </button>
         ))}
@@ -68,24 +71,36 @@ export function GalleryGrid({ items }: GalleryGridProps) {
 
       {selectedItem ? (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-azul-noche/90 p-3 backdrop-blur-sm sm:p-4"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-azul-noche/92 p-3 backdrop-blur-sm sm:p-5"
           role="dialog"
           aria-modal="true"
           aria-label={selectedItem.title}
           onClick={() => setSelectedIndex(null)}
         >
           <div
-            className="w-full max-w-5xl overflow-hidden rounded-lg bg-white shadow-2xl"
+            className="flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="relative aspect-[4/3] bg-azul-noche sm:aspect-[16/9]">
-              <Image
-                src={selectedItem.image}
-                alt={selectedItem.title}
-                fill
-                sizes="100vw"
-                className="object-cover"
-              />
+            <div className="relative min-h-0 flex-1 bg-azul-noche">
+              <div className="relative h-[56vh] max-h-[72vh] min-h-72 sm:h-[68vh]">
+                <Image
+                  src={selectedItem.image}
+                  alt={selectedItem.title}
+                  fill
+                  sizes="100vw"
+                  className="object-contain"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedIndex(null)}
+                className="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-2 text-xs font-black uppercase tracking-wider text-azul-noche shadow-lg transition hover:bg-grana hover:text-white"
+              >
+                Cerrar
+              </button>
+              <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-2 text-xs font-black text-azul-noche shadow-lg">
+                {selectedPosition} / {items.length}
+              </span>
               {items.length > 1 ? (
                 <>
                   <button
@@ -94,7 +109,7 @@ export function GalleryGrid({ items }: GalleryGridProps) {
                     className="absolute left-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-2xl font-black text-azul-noche shadow-lg transition hover:bg-grana hover:text-white"
                     aria-label="Imagen anterior"
                   >
-                    ‹
+                    {"<"}
                   </button>
                   <button
                     type="button"
@@ -102,27 +117,40 @@ export function GalleryGrid({ items }: GalleryGridProps) {
                     className="absolute right-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-2xl font-black text-azul-noche shadow-lg transition hover:bg-grana hover:text-white"
                     aria-label="Imagen siguiente"
                   >
-                    ›
+                    {">"}
                   </button>
                 </>
               ) : null}
             </div>
-            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
               <div>
-                <h2 className="text-2xl font-black text-azul-noche">
+                <h2 className="text-xl font-black text-azul-noche sm:text-2xl">
                   {selectedItem.title}
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  {selectedItem.description}
-                </p>
+                {selectedItem.description ? (
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    {selectedItem.description}
+                  </p>
+                ) : null}
               </div>
-              <button
-                type="button"
-                onClick={() => setSelectedIndex(null)}
-                className="inline-flex min-h-11 items-center justify-center rounded-md bg-grana px-5 py-2 text-sm font-bold text-white transition hover:bg-grana-oscuro focus:outline-none focus:ring-2 focus:ring-grana focus:ring-offset-2"
-              >
-                Cerrar
-              </button>
+              {items.length > 1 ? (
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={showPrevious}
+                    className="inline-flex min-h-10 flex-1 items-center justify-center rounded-md border border-azul-noche/15 px-4 py-2 text-sm font-bold text-azul-noche transition hover:border-grana hover:text-grana sm:flex-none"
+                  >
+                    Anterior
+                  </button>
+                  <button
+                    type="button"
+                    onClick={showNext}
+                    className="inline-flex min-h-10 flex-1 items-center justify-center rounded-md bg-grana px-4 py-2 text-sm font-bold text-white transition hover:bg-grana-oscuro sm:flex-none"
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

@@ -196,6 +196,10 @@ function revalidateContent(detailPath?: string) {
   }
 }
 
+function isMissingFeaturedColumn(message: string) {
+  return message.includes("is_featured") || message.includes("featured");
+}
+
 async function createEventUnsafe(formData: FormData) {
   const supabase = await requireAdminSupabase();
   const imageUrl = await uploadImageIfPresent(formData);
@@ -208,12 +212,41 @@ async function createEventUnsafe(formData: FormData) {
       event_date: getString(formData, "event_date"),
       location: getString(formData, "location"),
       image_url: imageUrl,
+      is_featured: getBoolean(formData, "is_featured"),
       is_published: getBoolean(formData, "is_published"),
     })
     .select("id")
     .single();
 
   if (error) {
+    if (isMissingFeaturedColumn(error.message)) {
+      const { data: retryData, error: retryError } = await supabase
+        .from("events")
+        .insert({
+          title: getString(formData, "title"),
+          description: getString(formData, "description"),
+          event_date: getString(formData, "event_date"),
+          location: getString(formData, "location"),
+          image_url: imageUrl,
+          is_published: getBoolean(formData, "is_published"),
+        })
+        .select("id")
+        .single();
+
+      if (retryError) {
+        throw new Error(
+          `No se pudo crear el evento en Supabase: ${retryError.message}`,
+        );
+      }
+
+      if (retryData?.id) {
+        await uploadAssociatedImages(formData, "event", retryData.id);
+      }
+
+      revalidateContent();
+      return;
+    }
+
     throw new Error(`No se pudo crear el evento en Supabase: ${error.message}`);
   }
 
@@ -234,6 +267,7 @@ async function updateEventUnsafe(formData: FormData) {
     description: getString(formData, "description"),
     event_date: getString(formData, "event_date"),
     location: getString(formData, "location"),
+    is_featured: getBoolean(formData, "is_featured"),
     is_published: getBoolean(formData, "is_published"),
   };
 
@@ -244,6 +278,24 @@ async function updateEventUnsafe(formData: FormData) {
   const { error } = await supabase.from("events").update(payload).eq("id", id);
 
   if (error) {
+    if (isMissingFeaturedColumn(error.message)) {
+      delete payload.is_featured;
+      const { error: retryError } = await supabase
+        .from("events")
+        .update(payload)
+        .eq("id", id);
+
+      if (retryError) {
+        throw new Error(
+          `No se pudo actualizar el evento en Supabase: ${retryError.message}`,
+        );
+      }
+
+      await uploadAssociatedImages(formData, "event", id);
+      revalidateContent(`/eventos/${id}`);
+      return;
+    }
+
     throw new Error(`No se pudo actualizar el evento en Supabase: ${error.message}`);
   }
 

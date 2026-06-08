@@ -9,6 +9,7 @@ import {
   getPublishedGalleryImages,
   getPublishedPosts,
 } from "@/lib/content";
+import { isUpcomingEvent } from "@/lib/date-utils";
 
 export default async function Home() {
   const [events, posts, gallery] = await Promise.all([
@@ -16,6 +17,9 @@ export default async function Home() {
     getPublishedPosts(),
     getPublishedGalleryImages(),
   ]);
+  const upcomingEvents = events.filter((event) => isUpcomingEvent(event.rawDate));
+  const featuredEvents = events.filter((event) => event.featured);
+  const nextEvent = upcomingEvents[0];
 
   return (
     <div className="min-h-screen bg-hueso text-foreground">
@@ -62,19 +66,85 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="bg-hueso py-16 sm:py-24">
+        {featuredEvents.length > 0 ? (
+          <section className="bg-white py-12 sm:py-16">
+            <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+              <div className="max-w-2xl">
+                <p className="text-sm font-bold uppercase tracking-wider text-grana">
+                  Destacados
+                </p>
+                <h2 className="mt-3 text-2xl font-black text-azul-noche sm:text-4xl">
+                  Eventos destacados
+                </h2>
+              </div>
+              <div className="mt-8 grid gap-4 md:grid-cols-3">
+                {featuredEvents.slice(0, 3).map((event) => (
+                  <EventCard
+                    key={event.id ?? event.title}
+                    {...event}
+                    href={event.id ? `/eventos/${event.id}` : undefined}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : null}
+
+        <section className="bg-hueso py-12 sm:py-20">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl">
               <p className="text-sm font-bold uppercase tracking-wider text-grana">
                 Eventos
               </p>
-              <h2 className="mt-3 text-3xl font-black text-azul-noche sm:text-4xl">
+              <h2 className="mt-3 text-2xl font-black text-azul-noche sm:text-4xl">
                 Proximos eventos
               </h2>
             </div>
-            {events.length > 0 ? (
-              <div className="mt-10 grid gap-5 md:grid-cols-3">
-                {events.slice(0, 3).map((event) => (
+
+            {nextEvent ? (
+              <Link
+                href={nextEvent.id ? `/eventos/${nextEvent.id}` : "/eventos"}
+                className="mt-8 grid overflow-hidden rounded-lg bg-azul-noche text-white shadow-lg shadow-azul-noche/10 transition hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-grana focus:ring-offset-2 sm:grid-cols-[180px_1fr]"
+              >
+                <div className="relative aspect-[16/9] bg-white/10 sm:aspect-auto">
+                  {nextEvent.image ? (
+                    <Image
+                      src={nextEvent.image}
+                      alt=""
+                      fill
+                      sizes="(min-width: 640px) 180px, 100vw"
+                      className="object-contain p-1"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-[linear-gradient(135deg,var(--azul-noche),var(--grana))]" />
+                  )}
+                </div>
+                <div className="p-4 sm:p-5">
+                  <p className="text-xs font-black uppercase tracking-wider text-white/60">
+                    Próximo evento
+                  </p>
+                  <h3 className="mt-2 text-xl font-black leading-tight sm:text-2xl">
+                    {nextEvent.title}
+                  </h3>
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold">
+                    <span className="rounded-full bg-grana px-3 py-1 text-white">
+                      {nextEvent.date}
+                    </span>
+                    <span className="rounded-full bg-white/10 px-3 py-1 text-white/85">
+                      {nextEvent.location}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ) : (
+              <div className="mt-8 rounded-lg border border-dashed border-azul-noche/20 bg-white p-5 text-sm font-semibold text-slate-600">
+                No hay próximos eventos publicados por ahora.
+              </div>
+            )}
+
+            {upcomingEvents.length > 0 ? (
+              <div className="mt-8 grid gap-4 md:grid-cols-3">
+                {upcomingEvents.slice(0, 3).map((event) => (
                   <EventCard
                     key={event.id ?? event.title}
                     {...event}
@@ -83,13 +153,11 @@ export default async function Home() {
                 ))}
               </div>
             ) : (
-              <div className="mt-10 rounded-lg border border-dashed border-azul-noche/20 bg-white p-6 text-sm font-semibold text-slate-600">
-                Todavia no hay eventos publicados.
-              </div>
+              null
             )}
             <Link
               href="/eventos"
-              className="mt-8 inline-flex min-h-11 items-center rounded-md bg-azul-noche px-5 py-2 text-sm font-bold text-white transition hover:bg-grana"
+              className="mt-7 inline-flex min-h-10 items-center rounded-md bg-azul-noche px-4 py-2 text-sm font-bold text-white transition hover:bg-grana"
             >
               Ver agenda completa
             </Link>
@@ -156,7 +224,7 @@ export default async function Home() {
                         alt={image.title}
                         fill
                         sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                        className="object-cover transition duration-500 group-hover:scale-105"
+                        className="object-contain p-1 transition duration-500 group-hover:scale-[1.02]"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-azul-noche/80 via-azul-noche/10 to-transparent" />
                     </div>

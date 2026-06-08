@@ -226,7 +226,14 @@ export function AdminContentManager({
               <div className="grid gap-4 sm:grid-cols-[160px_1fr]">
                 <ImagePreview alt={event.title} src={event.image_url} />
                 <div className="min-w-0">
-                  <StatusBadge published={event.is_published} />
+                  <div className="flex flex-wrap gap-2">
+                    <StatusBadge published={event.is_published} />
+                    {event.is_featured ? (
+                      <span className="inline-flex rounded-full bg-azul-noche px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+                        Destacado
+                      </span>
+                    ) : null}
+                  </div>
                   <h3 className="mt-3 text-xl font-black text-azul-noche">
                     {event.title}
                   </h3>
@@ -551,6 +558,7 @@ function EventForm({
       />
       <ImageInput label="Imagen destacada" />
       <MultipleImageInput />
+      <FeaturedCheckbox defaultChecked={event?.is_featured ?? false} />
       <PublishedCheckbox defaultChecked={event?.is_published ?? true} />
       <SubmitButton>{event ? "Guardar cambios" : "Crear evento"}</SubmitButton>
     </form>
@@ -770,6 +778,20 @@ function PublishedCheckbox({ defaultChecked = true }: { defaultChecked?: boolean
         className="h-4 w-4 accent-grana"
       />
       Publicado
+    </label>
+  );
+}
+
+function FeaturedCheckbox({ defaultChecked = false }: { defaultChecked?: boolean }) {
+  return (
+    <label className="flex items-center gap-3 text-sm font-bold text-azul-noche">
+      <input
+        type="checkbox"
+        name="is_featured"
+        defaultChecked={defaultChecked}
+        className="h-4 w-4 accent-grana"
+      />
+      Evento destacado
     </label>
   );
 }

@@ -8,6 +8,15 @@ function isIsoDate(value: string) {
   return /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 
+export function getIsoDateParts(value: string) {
+  if (!isIsoDate(value)) {
+    return null;
+  }
+
+  const [year, month, day] = value.split("-").map(Number);
+  return { day, month, year };
+}
+
 export function getTodayIsoDate() {
   const now = new Date();
   const year = now.getFullYear();
@@ -21,7 +30,13 @@ export function formatSpanishDate(value: string) {
     return value;
   }
 
-  const [year, month, day] = value.split("-").map(Number);
+  const parts = getIsoDateParts(value);
+
+  if (!parts) {
+    return value;
+  }
+
+  const { day, month, year } = parts;
   return spanishDateFormatter.format(new Date(year, month - 1, day));
 }
 
@@ -33,12 +48,18 @@ export function getDateInputValue(value?: string | null) {
   return isIsoDate(value) ? value : "";
 }
 
-export function getEventCountdown(value: string) {
+export function getEventDayDiff(value: string) {
   if (!isIsoDate(value)) {
-    return "";
+    return null;
   }
 
-  const [year, month, day] = value.split("-").map(Number);
+  const parts = getIsoDateParts(value);
+
+  if (!parts) {
+    return null;
+  }
+
+  const { day, month, year } = parts;
   const eventDate = new Date(year, month - 1, day);
   const today = new Date();
   const todayDate = new Date(
@@ -51,6 +72,21 @@ export function getEventCountdown(value: string) {
   const diffDays = Math.round(
     (eventDate.getTime() - todayDate.getTime()) / millisecondsPerDay,
   );
+
+  return diffDays;
+}
+
+export function isUpcomingEvent(value: string) {
+  const diffDays = getEventDayDiff(value);
+  return diffDays !== null && diffDays >= 0;
+}
+
+export function getEventCountdown(value: string) {
+  const diffDays = getEventDayDiff(value);
+
+  if (diffDays === null) {
+    return "";
+  }
 
   if (diffDays < 0) {
     return "Finalizado";

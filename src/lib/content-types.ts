@@ -1,6 +1,7 @@
 export type EventItem = {
   date: string;
   description: string;
+  featured?: boolean;
   id?: string;
   image?: string;
   location: string;
@@ -31,6 +32,7 @@ export type EventRow = {
   event_date: string;
   id: string;
   image_url: string | null;
+  is_featured?: boolean;
   is_published: boolean;
   location: string;
   title: string;

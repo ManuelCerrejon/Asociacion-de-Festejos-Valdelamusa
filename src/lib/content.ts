@@ -15,6 +15,7 @@ export function mapEvent(row: EventRow): EventItem {
     id: row.id,
     date: formatSpanishDate(row.event_date),
     description: row.description,
+    featured: row.is_featured === true,
     image: row.image_url ?? undefined,
     location: row.location,
     rawDate: row.event_date,

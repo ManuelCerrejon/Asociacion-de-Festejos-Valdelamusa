@@ -143,7 +143,7 @@ async function uploadAssociatedImages(
     .filter((file): file is File => file instanceof File && file.size > 0);
 
   if (files.length === 0) {
-    return;
+    return [];
   }
 
   const supabase = await requireAdminSupabase();
@@ -182,6 +182,8 @@ async function uploadAssociatedImages(
       `No se pudieron guardar las imagenes adicionales en Supabase: ${error.message}`,
     );
   }
+
+  return rows;
 }
 
 function revalidateContent(detailPath?: string) {
@@ -200,17 +202,100 @@ function isMissingFeaturedColumn(message: string) {
   return message.includes("is_featured") || message.includes("featured");
 }
 
+async function ensureGalleryImage({
+  description,
+  imageUrl,
+  title,
+}: {
+  description: string;
+  imageUrl: string | null;
+  title: string;
+}) {
+  if (!imageUrl) {
+    return;
+  }
+
+  const supabase = await requireAdminSupabase();
+  const { data: existingImage, error: readError } = await supabase
+    .from("gallery_images")
+    .select("id")
+    .eq("image_url", imageUrl)
+    .limit(1)
+    .maybeSingle();
+
+  if (readError) {
+    throw new Error(
+      `No se pudo comprobar si la imagen ya existe en la galeria: ${readError.message}`,
+    );
+  }
+
+  if (existingImage) {
+    return;
+  }
+
+  const { error } = await supabase.from("gallery_images").insert({
+    title,
+    description,
+    image_url: imageUrl,
+    is_published: true,
+  });
+
+  if (error) {
+    throw new Error(
+      `No se pudo publicar la imagen del evento en la galeria: ${error.message}`,
+    );
+  }
+}
+
+async function syncEventImagesToGallery({
+  additionalImageUrls,
+  eventDate,
+  eventDescription,
+  eventTitle,
+  imageUrl,
+  location,
+}: {
+  additionalImageUrls: string[];
+  eventDate: string;
+  eventDescription: string;
+  eventTitle: string;
+  imageUrl: string | null;
+  location: string;
+}) {
+  const galleryDescription = `${eventDescription} ${eventDate} · ${location}`.trim();
+
+  await ensureGalleryImage({
+    description: galleryDescription,
+    imageUrl,
+    title: eventTitle,
+  });
+
+  await Promise.all(
+    additionalImageUrls.map((additionalImageUrl, index) =>
+      ensureGalleryImage({
+        description: `Imagen adicional del evento ${eventTitle}`,
+        imageUrl: additionalImageUrl,
+        title: `${eventTitle} · imagen ${index + 1}`,
+      }),
+    ),
+  );
+}
+
 async function createEventUnsafe(formData: FormData) {
   const supabase = await requireAdminSupabase();
   const imageUrl = await uploadImageIfPresent(formData);
+  const title = getString(formData, "title");
+  const description = getString(formData, "description");
+  const eventDate = getString(formData, "event_date");
+  const location = getString(formData, "location");
 
   const { data, error } = await supabase
     .from("events")
     .insert({
-      title: getString(formData, "title"),
-      description: getString(formData, "description"),
-      event_date: getString(formData, "event_date"),
-      location: getString(formData, "location"),
+      title,
+      description,
+      event_date: eventDate,
+      location,
       image_url: imageUrl,
       is_featured: getBoolean(formData, "is_featured"),
       is_published: getBoolean(formData, "is_published"),
@@ -223,10 +308,10 @@ async function createEventUnsafe(formData: FormData) {
       const { data: retryData, error: retryError } = await supabase
         .from("events")
         .insert({
-          title: getString(formData, "title"),
-          description: getString(formData, "description"),
-          event_date: getString(formData, "event_date"),
-          location: getString(formData, "location"),
+          title,
+          description,
+          event_date: eventDate,
+          location,
           image_url: imageUrl,
           is_published: getBoolean(formData, "is_published"),
         })
@@ -240,7 +325,19 @@ async function createEventUnsafe(formData: FormData) {
       }
 
       if (retryData?.id) {
-        await uploadAssociatedImages(formData, "event", retryData.id);
+        const additionalImages = await uploadAssociatedImages(
+          formData,
+          "event",
+          retryData.id,
+        );
+        await syncEventImagesToGallery({
+          additionalImageUrls: additionalImages.map((image) => image.image_url),
+          eventDate,
+          eventDescription: description,
+          eventTitle: title,
+          imageUrl,
+          location,
+        });
       }
 
       revalidateContent();
@@ -251,7 +348,15 @@ async function createEventUnsafe(formData: FormData) {
   }
 
   if (data?.id) {
-    await uploadAssociatedImages(formData, "event", data.id);
+    const additionalImages = await uploadAssociatedImages(formData, "event", data.id);
+    await syncEventImagesToGallery({
+      additionalImageUrls: additionalImages.map((image) => image.image_url),
+      eventDate,
+      eventDescription: description,
+      eventTitle: title,
+      imageUrl,
+      location,
+    });
   }
 
   revalidateContent();
@@ -261,12 +366,16 @@ async function updateEventUnsafe(formData: FormData) {
   const supabase = await requireAdminSupabase();
   const id = getString(formData, "id");
   const imageUrl = await uploadImageIfPresent(formData);
+  const title = getString(formData, "title");
+  const description = getString(formData, "description");
+  const eventDate = getString(formData, "event_date");
+  const location = getString(formData, "location");
 
   const payload: Record<string, string | boolean | null> = {
-    title: getString(formData, "title"),
-    description: getString(formData, "description"),
-    event_date: getString(formData, "event_date"),
-    location: getString(formData, "location"),
+    title,
+    description,
+    event_date: eventDate,
+    location,
     is_featured: getBoolean(formData, "is_featured"),
     is_published: getBoolean(formData, "is_published"),
   };
@@ -291,7 +400,15 @@ async function updateEventUnsafe(formData: FormData) {
         );
       }
 
-      await uploadAssociatedImages(formData, "event", id);
+      const additionalImages = await uploadAssociatedImages(formData, "event", id);
+      await syncEventImagesToGallery({
+        additionalImageUrls: additionalImages.map((image) => image.image_url),
+        eventDate,
+        eventDescription: description,
+        eventTitle: title,
+        imageUrl,
+        location,
+      });
       revalidateContent(`/eventos/${id}`);
       return;
     }
@@ -299,7 +416,15 @@ async function updateEventUnsafe(formData: FormData) {
     throw new Error(`No se pudo actualizar el evento en Supabase: ${error.message}`);
   }
 
-  await uploadAssociatedImages(formData, "event", id);
+  const additionalImages = await uploadAssociatedImages(formData, "event", id);
+  await syncEventImagesToGallery({
+    additionalImageUrls: additionalImages.map((image) => image.image_url),
+    eventDate,
+    eventDescription: description,
+    eventTitle: title,
+    imageUrl,
+    location,
+  });
 
   revalidateContent(`/eventos/${id}`);
 }

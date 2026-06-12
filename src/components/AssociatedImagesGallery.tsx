@@ -23,8 +23,8 @@ export function AssociatedImagesGallery({
         {images.map((image, index) => (
           <div
             key={image.id}
-            className={`relative min-h-56 overflow-hidden rounded-lg bg-azul-noche ${
-              index === 0 ? "sm:col-span-2" : ""
+            className={`relative min-h-64 overflow-hidden rounded-lg bg-gradient-to-br from-azul-noche to-azul-noche/90 ${
+              index === 0 ? "sm:col-span-2 sm:min-h-96" : ""
             }`}
           >
             <Image
@@ -32,7 +32,7 @@ export function AssociatedImagesGallery({
               alt={image.alt_text || title}
               fill
               sizes="(min-width: 1024px) 896px, (min-width: 640px) 50vw, 100vw"
-              className="object-cover"
+              className="object-contain p-2"
             />
           </div>
         ))}

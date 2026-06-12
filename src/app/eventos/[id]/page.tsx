@@ -75,13 +75,13 @@ export default async function EventoDetallePage({
           <section className="py-10 sm:py-14">
             <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
               {event.image_url ? (
-                <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-azul-noche shadow-sm">
+                <div className="relative min-h-72 overflow-hidden rounded-lg bg-gradient-to-br from-azul-noche to-azul-noche/90 shadow-sm sm:min-h-[32rem]">
                   <Image
                     src={event.image_url}
                     alt={event.title}
                     fill
                     sizes="(min-width: 1024px) 896px, 100vw"
-                    className="object-cover"
+                    className="object-contain p-2"
                   />
                 </div>
               ) : null}

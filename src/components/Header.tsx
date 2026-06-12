@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getAdminSession } from "@/lib/auth";
 
 const navigation = [
   { label: "Inicio", href: "/" },
@@ -9,7 +10,9 @@ const navigation = [
   { label: "Contacto", href: "/contacto" },
 ];
 
-export function Header() {
+export async function Header() {
+  const adminSession = await getAdminSession();
+
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-azul-noche/92 text-white shadow-lg shadow-azul-noche/10 backdrop-blur-xl">
       <nav
@@ -38,6 +41,14 @@ export function Header() {
               {item.label}
             </Link>
           ))}
+          {adminSession ? (
+            <Link
+              href="/admin"
+              className="shrink-0 rounded-full bg-grana px-3 py-2 text-white transition hover:bg-grana-oscuro focus:outline-none focus:ring-2 focus:ring-white/70 sm:px-4"
+            >
+              Administración
+            </Link>
+          ) : null}
         </div>
       </nav>
     </header>
